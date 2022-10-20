@@ -4,10 +4,31 @@ import { GoogleLogin, googleLogout } from '@react-oauth/google';
 import { FcGoogle } from 'react-icons/fc';
 import shareVideo from '../assets/share.mp4';
 import logo from '../assets/logowhite.png';
-import { createOrGetUser } from './index';
+import jwt_decode from "jwt-decode";
+
+import { client } from '../client';
 
 
 const Login = () => {
+  const navigate = useNavigate();
+  const createOrGetUser =  (response) => {
+    const decodedToken = jwt_decode(response.credential);
+    localStorage.setItem("user", JSON.stringify(decodedToken));
+  
+    const { name, picture, sub } = decodedToken;
+  
+    const doc = {
+      _id: sub,
+      _type: "user",
+      userName: name,
+      image: picture,
+    };
+
+    client.createIfNotExists(doc)
+    .then(() => {
+      navigate("/", { replace: true });
+    });
+  };
 
   return (
     <div className='flex justify-start items-center flex-col h-screen'>
